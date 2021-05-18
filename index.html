@@ -195,7 +195,7 @@
 <body onload="setup();setOutputValues();initialiseD3();">
 <div id="graphControls">
  <div class="onecontrol">Categories:<br/>
-  <input type="range" id="input_categories" value="3" min="1" max="10" oninput="setOutputValues();"/>
+  <input type="range" id="input_categories" value="3" min="1" max="10" oninput="setOutputValues();" onchange="setup();"/>
   <output id="output_categories">3</output>
  </div>
 
@@ -236,7 +236,7 @@
  </div>
 
  <div class="onecontrol" style="margin:0;">Repulsion:<br/>
-  <input type="range" id="input_repulsion" value="50" min="10" max="400" step="10" oninput="setOutputValues();restart();"/>
+  <input type="range" id="input_repulsion" value="150" min="10" max="400" step="10" oninput="setOutputValues();restart();"/>
   <output id="output_repulsion"></output>
  </div>
 
@@ -265,7 +265,7 @@
   <button style="float:right;" onClick="copy('dotcontent');">Copy</button>
   <button style="float:right; margin-right:10px;" onClick="makeDot();" title="Displays the DOT language code for the graph">Generate</button>
 <!--  <textarea id="dotcontent"></textarea>-->
-  <div id="dotcontent"></div>
+  <div id="dotcontent"><pre>Dot code will go here.</pre></div>
  </div>
 
 </div> <!-- end of thematrix div -->
