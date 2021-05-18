@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<head>
+ <meta charset="utf-8">
+ <title>Label-regular trees</title>
+ <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans|Open+Sans+Condensed:Light&display=swap">
+ <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.1/spectrum.min.css">
+ <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" integrity="sha512-aOG0c6nPNzGk+5zjwyJaoRUgCdOrfSDhmMID2u4+OIslr0GjpLKo7Xm0Ao3xmpM4T8AmIouRkqwj1nrdVsLKEQ==" crossorigin="anonymous" />
+ <link rel="stylesheet" href="graphControls.css">
+ <style>
+  html {
+   overflow: hidden;
+   background-color: #333;
+   font-family: "Open Sans Condensed", sans-serif;
+  }
+  body {
+   margin: 0;
+   padding: 0;
+  }
+
+  #thegraph {
+   height: 70vh;
+   width: 45vw;
+   padding: 5px;
+   margin: 5px;
+   box-sizing: content-box;
+   float: left;
+  }
+  #thegraph svg {
+   background-color: #aaa;
+   margin: 0; /* if this changes, the save-as-png bounding box will be offset by the same amount (and so you can lose some nodes) */
+   height: 100%;
+   width: 100%;
+  }
+  #thesvg {
+   position: relative;
+  }
+
+  rect {
+   fill: none;
+   pointer-events: all;
+  }
+/*
+  .node {
+   fill: #000;
+   stroke: #000;
+   stroke-width: 1;
+  }
+  .node .fixed {
+   stroke-width: 10;
+  }
+*/
+  .cursor {
+   fill: none;
+   fill: white;
+   stroke: brown;
+   pointer-events: none;
+   stroke-dasharray: 2,2;
+   fill-opacity: 0.3;
+  }
+  .leafnode {
+   stroke-dasharray: 2,2;
+  }
+  .link {
+   stroke: white;
+  }
+
+  #thematrix {
+   float:left;
+   height: 70vh;
+   margin: 10px;
+   margin-left: 13px;
+   background-color: #777;
+   border: 1px solid red;
+  }
+  #thematrix th {
+   font-size: 14px;
+   width: 20px;
+   color: #444;
+  }
+  #thematrix tr {
+   height: 8px;
+   padding: 0;
+   margin: 0;
+  }
+  #thematrix table td {
+   height: 8px;
+   padding: 0;
+   margin: 0;
+  }
+  #thematrix input[type="text"] {
+   font-family: "Open Sans", sans-serif;
+   text-align: center;
+   padding-right: 5px;
+   margin: 0;
+   border: 1px solid #bbb;
+  }
+  input[type="text"]:disabled {
+   background-color: #777;
+   color: #ccc;
+  }
+  #thematrix p {
+   margin: 0;
+   padding: 0;
+   width: 100%;
+   text-align: center;
+  }
+
+  #dotpanel {
+   background: #222;
+   margin: 10px;
+   padding: 5px;
+   min-width: 400px;
+  }
+  #dotcontent {
+   color: yellow;
+   font-size: 10px;
+   background-color: inherit;
+   padding: 0;
+   margin: 0;
+   margin-top: 5px;
+   width: 100%;
+   height: 95%;
+   overflow-y: auto;
+  }
+
+  #graphControls {
+   color: #600;
+   margin: 8px;
+   margin-left: 11px;
+   padding: 8px;
+  }
+  label {
+   display: inline-block;
+   width: 180px;
+   font-size: 12px;
+   text-align: right;
+   margin-right: 10px;
+  }
+  input[type=range] {
+   vertical-align: middle;
+   margin: 4px;
+  }
+  input[type=checkbox] {
+   vertical-align: middle;
+  }
+  input[type=text] {
+   margin: 4px;
+  }
+  .bigbutton {
+   border-radius: 2px;
+   font-size: 1.6em;
+  }
+  output {
+   text-align: left;
+  }
+
+  .onecontrol {
+   vertical-align: top;
+  }
+
+  #dotpanel button {
+   border-radius: 2px;
+   font-size: 12px;
+  }
+
+  /* Adjust the spectrum.js colour-picker swatches: */
+  .sp-replacer {
+   line-height: 10px;
+   margin-top: 6px;
+  }
+  .sp-preview {
+   width: 12px;
+   height: 12px;
+  }
+  .sp-dd {
+   padding: 0;
+   height: 12px;
+   line-height: 12px;
+  }
+
+  .cat0, .cat1, .cat2, .cat3, .cat4, .cat5, .cat6, .cat7, .cat8, .cat9 {
+   color: #000;
+   text-shadow: 1px 1px 3px #fff, -1px -1px 3px #fff, -1px 1px 3px #fff, 1px -1px 3px #fff;
+   background-color: initial;
+  }
+ </style>
+
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" integrity="sha512-uto9mlQzrs59VwILcLiRYeLKPPbS/bT71da/OEBYEwcdNUk8jYIy+D176RYoop1Da+f9mvkYrmj5MCLZWEtQuA==" crossorigin="anonymous"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js" integrity="sha512-oJp0DdQuQQrRsKVly+Ww6fAN1GwJN7d1bi8UubpEbzDUh84WrJ2CFPBnT4LqBCcfqTcHR5OGXFFhaPe3g1/bzQ==" crossorigin="anonymous"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.1/spectrum.min.js" integrity="sha512-1aNp9qKP+hKU/VJwCtYqJP9tdZWbMDN5pEEXXoXT0pTAxZq1HHZhNBR/dtTNSrHO4U1FsFGGILbqG1O9nl8Mdg==" crossorigin="anonymous"></script>
+ <script src="matrixeditor.js"></script>
+</head>
+
+<body onload="setup();setOutputValues();initialiseD3();">
+<div id="graphControls">
+ <div class="onecontrol">Categories:<br/>
+  <input type="range" id="input_categories" value="3" min="1" max="10" oninput="setOutputValues();"/>
+  <output id="output_categories">3</output>
+ </div>
+
+<div class="onecontrol controlwrapper">
+ <div class="onecontrol">Outlines:<br/>
+  <label class="switch">
+   <input type="checkbox" id="input_outlines" onchange="restart();" checked />
+   <span class="slider round"></span>
+  </label><br/>
+  <input type="text" class="basicpicker controlpicker" id="outlinepicker" onchange="restart();" value="#000000" />
+ </div>
+
+ <div class="onecontrol">Edges:<br/>
+  <label class="switch">
+   <input type="checkbox" id="input_edges" onchange="restart();" checked />
+   <span class="slider round"></span>
+  </label><br/>
+  <input type="text" class="basicpicker controlpicker" id="edgepicker" onchange="restart();" value="#000000" />
+ </div>
+
+ <div class="onecontrol">Fill:<br/>
+  <label class="switch">
+   <input type="checkbox" id="input_fill" onchange="restart();" checked />
+   <span class="slider round"></span>
+  </label>
+ </div>
+
+ <div class="onecontrol" style="margin:0;">Radius:<br/>
+  <input type="range" id="input_noderadius" value="5" min="2" max="10" oninput="setOutputValues();"/>
+  <output id="output_noderadius"></output>
+ </div>
+</div>
+
+<div class="onecontrol controlwrapper">
+ <div class="onecontrol" style="margin:0;">Gravity:<br/>
+  <input type="range" id="input_gravity" value="0.8" min="0" max="1" step="0.01" oninput="setOutputValues();restart();"/>
+  <output id="output_gravity"></output>
+ </div>
+
+ <div class="onecontrol" style="margin:0;">Repulsion:<br/>
+  <input type="range" id="input_repulsion" value="50" min="10" max="400" step="10" oninput="setOutputValues();restart();"/>
+  <output id="output_repulsion"></output>
+ </div>
+
+ <div class="onecontrol" style="margin:0;">Spacing:<br/>
+  <input type="range" id="input_edgelength" value="10" min="1" max="50" step="1" oninput="setOutputValues();restart();"/>
+  <output id="output_edgelength"></output>
+ </div>
+</div>
+
+ <div class="onecontrol">Fade leaves:<br/>
+  <label class="switch">
+   <input type="checkbox" id="input_fadeleaves" onchange="restart();" checked />
+   <span class="slider round"></span>
+  </label>
+ </div>
+
+ <button class="bigbutton" onClick="addAllLeaves();" style="margin-left:10px; margin-right:20px;">Add all leaves</button>
+
+</div> <!-- end of graphControls div -->
+
+
+<div id="thematrix">
+ <div id="editorcontent"></div>
+
+ <div id="dotpanel">
+  <button style="float:right;" onClick="copy('dotcontent');">Copy</button>
+  <button style="float:right; margin-right:10px;" onClick="makeDot();" title="Displays the DOT language code for the graph">Generate</button>
+<!--  <textarea id="dotcontent"></textarea>-->
+  <div id="dotcontent"></div>
+ </div>
+
+</div> <!-- end of thematrix div -->
+
+<div id="thegraph"><svg id="thesvg"></svg></div>
+
+
+ <script>
+// set up a two-dimensional array //////////////////////////////////////////////////////// fn: createArray
+// ref: https://stackoverflow.com/questions/966225/
+function createArray(length=0) {
+ var arr = Array(length);
+ var i = length;
+ if (arguments.length > 1) {
+  var args = Array.prototype.slice.call(arguments, 1);
+  while(i--) arr[length-1 - i] = createArray.apply(this, args);
+ }
+ return arr;
+}
+
+// generate a random integer ///////////////////////////////////////////////////////////// fn: randInt
+// ref: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+function randInt(min, max) {
+ if(typeof max === "undefined"){
+  max = min;
+  min = 0;
+ }
+ min = Math.ceil(min);
+ max = Math.floor(max);
+ return Math.floor(Math.random() * (max - min + 1)) + min; // max and min are both inclusive
+}
+
+// initialise the d3 model /////////////////////////////////////////////////////////////// fn: initialiseD3
+function initialiseD3(){
+ var thesvg = document.getElementById("thesvg");
+ var svgwidth = thesvg.getBoundingClientRect().width;
+ var svgheight = thesvg.getBoundingClientRect().height;
+ var debug = false;
+
+//  .nodes([{}]) // initialize with a single node
+ force = d3.layout.force()
+     .size([svgwidth, svgheight])
+     .nodes([{x:Math.round(svgwidth/2), y:Math.round(svgheight/2)}]) // initialize with a single node, at the centre
+     .gravity(document.getElementById("input_gravity").value)
+     .charge(-document.getElementById("input_repulsion").value)
+     .linkDistance(document.getElementById("input_edgelength").value)
+     .on("tick", tick);
+
+ var drag = force.drag()
+     .on("dragstart", dragstart);
+
+ var svg = d3.select("#thesvg")
+     .attr("width", svgwidth)
+     .attr("height", svgheight)
+     .on("mousemove", mousemove)
+     .on("mouseleave", mouseleave)
+     .on("mouseenter", mouseenter)
+     .on("DOMMouseScroll", mousewheel)
+     .on("mousedown", d3click);
+
+ svg.append("rect")
+     .attr("width", svgwidth)
+     .attr("height", svgheight);
+
+  // global variables:
+ nodes = force.nodes();
+ links = force.links();
+ node = svg.selectAll(".node");
+ link = svg.selectAll(".link");
+
+ var cursor = svg.append("circle")
+     .attr("id","thecursor")
+     .attr("r", circleSize)
+     .attr("transform", "translate(-100,-100)")
+     .attr("class", "cursor");
+
+ // keep track of the links between nodes
+ // initialise, and then loop through "links" and record those present (which will be none, initially)
+ linkedByIndex = {};
+ links.forEach(function(d) {
+  linkedByIndex[d.target.myindex + "," + d.source.myindex] = 1;
+ });
+
+ // size of nodes
+ var nodeRadius = parseInt(document.getElementById("input_noderadius").value);
+
+ // add some attributes to the first node
+ nodes[0].group = 0;
+ nodes[0].myindex = 0;
+ nodes[0].isleaf = true;
+ nodes[0].id = "node0";
+ nodes[0].r = nodeRadius;
+// nodes[0].fixed = false; // immobile  (can still be dragged by the user)
+
+ // get things going
+ restart();
+}
+
+function d3click(){
+ var debug = false;
+ var Ngroups = parseInt(document.getElementById("input_categories").value);
+ var nodeRadius = parseInt(document.getElementById("input_noderadius").value);
+
+ force.stop(); // necessary?
+ var point = d3.mouse(this);
+ var clicklocation = {x: Math.round(point[0]), y: Math.round(point[1])};
+
+ // first, check if we are actually clicking on an existing node (with 1-pixel padding)
+ var clickedNode = false;
+ var clickedNodeIndex = -1;
+ nodes.forEach(function(thisnode) {
+  thisdist = distance(clicklocation,thisnode);
+  var nodesize = thisnode.r;
+  if (thisdist < (nodesize+1)) {
+   clickedNode = true;
+   clickedNodeIndex = thisnode.index;
+  }
+ });
+
+ // if we clicked on a node
+ if (clickedNode) {
+  if (debug) console.log("You clicked on a node! (Node "+clickedNodeIndex+")");
+  // ... then do nothing: node clicks and drags are handled elsewhere
+ } else {
+  nodes.forEach(function(thisnode) {
+   thisdist = distance(clicklocation,thisnode);
+   if (thisdist < circleSize) {
+    if (debug) console.log("Clicked at ("+clicklocation.x+", "+clicklocation.y+")");
+    if (debug) console.log("Node "+thisnode.myindex+" is within the circle, so we add any required child nodes to it");
+    if (debug) console.log("Node index="+thisnode.index+" myindex="+thisnode.myindex+" at ("+thisnode.x+", "+thisnode.y+") to ("+clicklocation.x+", "+clicklocation.y+") is dist="+Math.round(thisdist));
+
+    // 1. count how many neighbours of each type this node has:
+    count = Array(Ngroups);
+    for (i=0;i<Ngroups;i++){ count[i] = 0; } // initialise to zero
+    nodes.forEach(function(othernode) {
+     if (othernode.myindex != thisnode.myindex) {
+      if (neighbouring(thisnode,othernode)){
+       count[othernode.group]++;
+      }
+     }
+    });
+
+    // 2. having counted, look at the counts and add new nodes where required (to bring
+    //    the counts up to those specified in the generating matrix [as it currently exists]):
+    // i. loop through the counts:
+    var genMatrix = getMatrix();
+    for (g=0;g<Ngroups;g++){
+     if (debug) console.log("genMatrix = "+genMatrix[thisnode.group][g]+"  count = "+count[g]);
+     // ii. compare the count with the generating matrix, and
+     // iii. add nodes as required
+     for (k=count[g];k<genMatrix[thisnode.group][g];k++){ // if the count already matches genMatrix, this will be a zero-length for-loop
+      if (debug) console.log(" + adding neighbour to node "+thisnode.myindex)
+      nodes.push({x:clicklocation.x+randInt(0,50)-25,y:clicklocation.y+randInt(0,50)-25,group:g,myindex:nodes.length,r:nodeRadius});
+      if (debug) console.log("         ADDED NODE AT x="+nodes[nodes.length-1].x+", y="+nodes[nodes.length-1].y+", index="+nodes[nodes.length-1].index);
+
+      nodes[nodes.length-1].myindex = nodes.length-1;
+      nodes[nodes.length-1].group = g;
+      nodes[nodes.length-1].isleaf = true;
+      nodes[nodes.length-1].r = nodeRadius;
+//      nodes[nodes.length-1].fixed = false; // *probably* this should always be false for *new* nodes...
+
+      // now create a link to the new node from the parent:
+      createLink(thisnode,nodes[nodes.length-1]);
+
+      if (debug) console.log("... created node "+nodes[nodes.length-1].myindex+" with group "+nodes[nodes.length-1].group);
+
+      // update the leaf status of this node:
+      thisnode.isleaf = false;
+     }
+    }
+   }
+  });
+ }
+ restart();
+}
+
+// find all of the leaf nodes and add their neighbours /////////////////////////////////// fn: addAllLeaves
+function addAllLeaves(){
+ var debug = false;
+ var Ngroups = parseInt(document.getElementById("input_categories").value);
+ var nodeRadius = parseInt(document.getElementById("input_noderadius").value);
+
+ force.stop(); // necessary?
+
+ nodes.forEach(function(thisnode) {
+  // 1. count how many neighbours of each type this node has:
+  count = Array(Ngroups);
+  for (i=0;i<Ngroups;i++){ count[i] = 0; } // initialise to zero
+
+  if (thisnode.isleaf) { // *** ONLY ACT ON LEAVES ***
+   nodes.forEach(function(othernode) {
+    if (othernode.myindex != thisnode.myindex) {
+     if (neighbouring(thisnode,othernode)){
+      count[othernode.group]++;
+     }
+    }
+   });
+
+   // 2. having counted, look at the counts and add new nodes where required (to bring
+   //    the counts up to those specified in the generating matrix [as it currently exists]):
+   // i. loop through the counts:
+   var genMatrix = getMatrix();
+   for (g=0;g<Ngroups;g++){
+    if (debug) console.log("genMatrix = "+genMatrix[thisnode.group][g]+"  count = "+count[g]);
+    // ii. compare the count with the generating matrix, and
+    // iii. add nodes as required
+    for (k=count[g];k<genMatrix[thisnode.group][g];k++){ // if the count already matches genMatrix, this will be a zero-length for-loop
+     if (debug) console.log(" + adding neighbour to node "+thisnode.myindex)
+     nodes.push({x:Math.round(thisnode.x+randInt(0,50)-25),y:Math.round(thisnode.y+randInt(0,50)-25),group:g,myindex:nodes.length,r:nodeRadius});
+     if (debug) console.log("         ADDED NODE AT x="+nodes[nodes.length-1].x+", y="+nodes[nodes.length-1].y+", index="+nodes[nodes.length-1].index);
+
+     nodes[nodes.length-1].myindex = nodes.length-1;
+     nodes[nodes.length-1].group = g;
+     nodes[nodes.length-1].isleaf = true;
+     nodes[nodes.length-1].r = nodeRadius;
+//     nodes[nodes.length-1].fixed = false; // *probably* this should always be false for *new* nodes...
+
+     // now create a link to the new node from the parent:
+     createLink(thisnode,nodes[nodes.length-1]);
+     if (debug) console.log("... created node "+nodes[nodes.length-1].myindex+" with group "+nodes[nodes.length-1].group);
+
+     // update the leaf status of this node:
+     thisnode.isleaf = false;
+    }
+   }
+  }
+ });
+ restart();
+}
+
+// the time-step updating function for the d3 model ////////////////////////////////////// fn: tick
+function tick() {
+ var gridSizeX = 50;
+ var gridSizeY = 50;
+
+ node.attr("cx", function(d) { return d.x; })
+     .attr("cy", function(d) { return d.y; });
+ node.attr("px", function(d) { return d.cx; })
+     .attr("py", function(d) { return d.cy; });
+
+ node.attr("transform", function(d) {"translate(" + gridSizeX*Math.round(d.px/gridSizeX)-d.px + ", "+ gridSizeY*Math.round(d.py/gridSizeY)-d.py +" );"; });
+
+ link.attr("x1", function(d) { return d.source.x; })
+     .attr("y1", function(d) { return d.source.y; })
+     .attr("x2", function(d) { return d.target.x; })
+     .attr("y2", function(d) { return d.target.y; });
+}
+
+// define double-click behaviour ///////////////////////////////////////////////////////// fn: dblclick
+function dblclick(d) {
+ var debug = false;
+ if (debug) console.log("Double click!");
+ d3.select(this).classed("fixed", d.fixed = false);
+}
+
+// set up drag behaviour ///////////////////////////////////////////////////////////////// fn: dragstart
+function dragstart(d) {
+ var debug = false;
+ if (debug) console.log("Dragging!");
+ d3.select(this).classed("fixed", d.fixed = true);
+}
+
+// function for restarting the d3 model ////////////////////////////////////////////////// fn: restart
+function restart() {
+ var nodeRadius = parseInt(document.getElementById("input_noderadius").value);
+ var svg = d3.select("#thesvg");
+ var debug = false;
+ force.gravity(document.getElementById("input_gravity").value)
+      .charge(-document.getElementById("input_repulsion").value)
+      .linkDistance(document.getElementById("input_edgelength").value);
+
+ link = link.data(links);
+
+ link.enter().insert("line", ".node")
+     .attr("class", "link");
+
+ node = node.data(nodes)
+    .attr("class", "node")
+    .on("dblclick", dblclick)
+    .call(force.drag);
+
+ node.enter().insert("circle", ".cursor")
+     .attr("class", "node")
+     .attr("r", nodeRadius)
+     .call(force.drag);
+
+ // check whether we are fading the leaf nodes:
+ var dofadeleaves = document.getElementById("input_fadeleaves").checked;
+
+ // let the nodes be coloured according to their group:
+//works too:  svg.selectAll(".node").style("fill",function(d){return d3colour(d.group);});
+//also works: svg.selectAll(".node").style("fill",function(d){return document.getElementById("picker"+d.group).value;});
+ svg.selectAll(".node")
+    .style("fill",function(d){if (document.getElementById("input_fill").checked) return document.getElementById("picker"+d.group).value; else return "#fff0";})
+    .style("stroke",function(d){if (document.getElementById("input_outlines").checked) return document.getElementById("outlinepicker").value; else return "none";})
+    .style("fill-opacity",function(d){if (d.isleaf && dofadeleaves) return "0.3"; else return "1";})
+    .style("stroke-opacity",function(d){if (d.isleaf && dofadeleaves) return "0"; else return "1";})
+    .style("stroke-dasharray",function(d){if (d.isleaf && dofadeleaves) return "2,2"; else return "none";});
+
+ // outline? or leave black
+//    .style("stroke",function(d){return d3colour(d.group);});
+
+ svg.selectAll(".link")
+    .style("stroke",function(d){if (document.getElementById("input_edges").checked) return document.getElementById("edgepicker").value; else return "none";})
+    .style("stroke-opacity",function(d){if ((d.source.isleaf || d.target.isleaf) && dofadeleaves) return "0.3"; else return "1";})
+    .style("stroke-dasharray",function(d){if ((d.source.isleaf || d.target.isleaf) && dofadeleaves) return "2,2"; else return "none";});
+
+// svg.selectAll(".node").style("stroke","#000")
+
+ force.start();
+ return 0;
+}
+
+// fetch the generating matrix entries from the form ///////////////////////////////////// fn: getMatrix
+function getMatrix(){
+ var debug = false;
+ var Ngroups = parseInt(document.getElementById("input_categories").value);
+ var genMatrix = createArray(Ngroups,Ngroups); // initialise
+
+ for (m=0;m<Ngroups;m++){
+  for (n=0;n<Ngroups;n++){
+   // get the values from the form:
+   if (debug) console.log("value ("+m+","+n+") is ["+$("#gen_"+m+"_"+n).val()+"]");
+   genMatrix[m][n] = $("#gen_"+m+"_"+n).val();
+  }
+ }
+ return genMatrix;
+}
+
+
+// create the dot code for the current graph ///////////////////////////////////////////// fn: makeDot
+function makeDot(){
+ var dot = "graph {\n";
+ var lastsource = "";
+ var lasttarget = "";
+ var Ngroups = parseInt(document.getElementById("input_categories").value);
+
+ // loop through the group, set each one's colour and then list its nodes:
+ var keepCount = 0;
+ for (g=0;g<Ngroups;g++){
+  dot += "\n {color:"+document.getElementById("picker"+g).value+"}\n  ";
+  nodes.forEach(function(d) {
+   if (d.group == g) {
+    dot += " "+d.myindex+";"
+    keepCount++;
+    if (keepCount%20 == 0){ // wrap long lines after 20 nodes
+     dot += "\n  ";
+    }
+   }
+  });
+ }
+ dot += "\n\n";
+
+ // loop through the links nodes and add them to the output
+ links.forEach(function(d) {
+  if (d.source.myindex == lasttarget && d.target.myindex == lastsource){
+   // do nothing (do not print both links for an undirected edge)
+  } else {
+   dot += " "+d.source.myindex+" -- "+d.target.myindex+"\n";
+  }
+  lastsource = d.source.myindex;
+  lasttarget = d.target.myindex;
+ });
+ dot += "\n}\n";
+
+ document.getElementById("dotcontent").innerHTML = "<pre>"+dot+"</pre>";
+ document.getElementById("dotcontent").setAttribute("data-copy-text",dot); // for the clipboard
+}
+
+
+// create the initial matrix editing table and display some control values /////////////// fn: setup
+function setup(){
+ var n = parseInt(document.getElementById("input_categories").value);
+ document.getElementById("editorcontent").innerHTML = createMatrixEditor(n);
+
+ // initial d3 "cursor" size
+ circleSize = 80;
+
+ // initialise the colour pickers
+ $(".basicpicker").spectrum({
+  preferredFormat: "hex3",
+ });
+
+ setColours();
+
+}
+
+// HTML input labelling function ///////////////////////////////////////////////////////// fn: setOutputValues
+// function which looks for inputs and their labels (containing the input value), and sets the label
+// (called on page load, to set the initial labels, and when one of the slider controls changes (valency, maxdepth))
+function setOutputValues(){
+ var debug = false;
+
+ var inputs = document.getElementsByTagName("input"); // get a list of the page inputs
+ for (var i=0;i<inputs.length;i++){ // loop over the inputs
+  if (inputs[i].id.length && !inputs[i].classList.contains("pickertheme")){ // omit the colour pickers from this process
+   if (debug) console.log("examining "+inputs[i].id);
+   outputID = inputs[i].id.replace('input_','output_');
+   if (!!document.getElementById(outputID)){ // does an output tag for this control exist?
+    document.getElementById(outputID).value = inputs[i].value; // set the value of the output to the input
+   }
+  } else {
+   if (debug) console.log("skipping "+inputs[i].id);
+  }
+ }
+}
+
+// set up the d3 colours ///////////////////////////////////////////////////////////////// fn: d3colour
+function d3colour(n){
+// var d3colour = d3.scale.category20();
+ var d3colourscale = d3.scale.category20();
+ var colour = "#0000ff";
+ switch (n){
+  case 0: colour = "#f94433"; break;
+  case 1: colour = "#2211fc"; break;
+  case 2: colour = "#34fb44"; break;
+  default:
+   colour = d3colourscale(n);
+ }
+ return colour;
+}
+
+// set the scroll-wheel behaviour //////////////////////////////////////////////////////// fn: mousewheel
+function mousewheel() {
+ // check on the allowed radii: get slider values
+ var delta = d3.event.detail;
+ var minCircleRadius = 10;
+ var maxCircleRadius = 100;
+
+ circleSize += delta;
+ if (circleSize<minCircleRadius) circleSize=minCircleRadius;
+ if (circleSize>maxCircleRadius) circleSize=maxCircleRadius;
+
+ var cursor = d3.select("#thecursor");
+ cursor.attr("r", circleSize);
+}
+
+// function to calculate Euclidean distance between two nodes //////////////////////////// fn: distance
+// also works with, eg., mouse-click coordinates when packed as {x: point[0], y: point[1]}
+function distance(node1, node2) {
+  var dist = Math.sqrt(Math.pow(node1.x-node2.x,2.0) + Math.pow(node1.y-node2.y,2.0));
+  return dist;
+}
+
+// function to find the bounding box of the extant nodes ///////////////////////////////// fn: bounds
+function bounds() {
+ var minX = 1000000;
+ var maxX = -1000000;
+ var minY = 1000000;
+ var maxY = -1000000;
+ nodes.forEach(function(thisnode) {
+  if ((thisnode.x-thisnode.r)<minX) {minX=(thisnode.x-thisnode.r); minXnode=thisnode.index;}
+  if ((thisnode.x+thisnode.r)>maxX) {maxX=(thisnode.x+thisnode.r); maxXnode=thisnode.index;}
+  if ((thisnode.y-thisnode.r)<minY) {minY=(thisnode.y-thisnode.r); minYnode=thisnode.index;}
+  if ((thisnode.y+thisnode.r)>maxY) {maxY=(thisnode.y+thisnode.r); maxYnode=thisnode.index;}
+ });
+ minX=Math.floor(minX);
+ maxX=Math.ceil(maxX);
+ minY=Math.floor(minY);
+ maxY=Math.ceil(maxY);
+ return {minX, maxX, minY, maxY, minXnode, maxXnode, minYnode, maxYnode};
+}
+
+// function which returns true if two nodes are linked /////////////////////////////////// fn: neighbouring
+// we do this by keeping track of links in an array
+function neighbouring(a, b) {
+ // a and b are nodes (not node indices, etc.)
+ return linkedByIndex[a.myindex + "," + b.myindex];
+}
+
+// create an edge between nodes ////////////////////////////////////////////////////////// fn: createLink
+// making this a function lets us modify the desired behaviour in one place
+//   (eg. directional links? self links? etc.)
+function createLink(a, b) {
+ // Note that a and b are nodes (not node indices, etc.)
+ var allowSelfLink = false;
+ var allowDirectedLinks = false; // otherwise, create a link each way
+ var okayToLink = true;
+
+ if (a.myindex==b.myindex & !allowSelfLink) { // check if we are linking a node to itself
+  okayToLink = false;
+ }
+
+ if (okayToLink){
+  links.push({source: a, target: b}); // add the link (a -> b)
+  linkedByIndex[a.myindex + "," + b.myindex] = 1; // and update the connectivity list
+  if (!allowDirectedLinks){ // need links the other way too
+   links.push({source: b, target: a});
+   linkedByIndex[b.myindex + "," + a.myindex] = 1;
+  }
+ }
+}
+
+
+// set up the mouse move behaviour /////////////////////////////////////////////////////// fn: mousemove
+function mousemove() {
+ var cursor = d3.select("#thecursor");
+ cursor.attr("transform", "translate(" + d3.mouse(this) + ")");
+}
+
+// set up the mouse behaviour when it leaves the SVG ///////////////////////////////////// fn: mouseleave
+function mouseleave() {
+ var cursor = d3.select("#thecursor");
+ cursor.attr("display", "none");
+}
+
+// set up the mouse behaviour when it enters the SVG ///////////////////////////////////// fn: mouseenter
+function mouseenter() {
+ var cursor = d3.select("#thecursor");
+ cursor.attr("display", "");
+}
+
+// set up the click behaviour //////////////////////////////////////////////////////////// fn: mousedown
+function mousedown() {
+ if (false) switch (event.which) {
+  case 1:
+   alert("Left Mouse button pressed.");
+   break;
+  case 2:
+   alert("Middle Mouse button pressed.");
+   break;
+  case 3:
+   alert("Right Mouse button pressed.");
+   break;
+  default:
+   alert("You have a strange Mouse!");
+ }
+}
+
+// copy the specified object's contents ////////////////////////////////////////////////// fn: copy
+async function copy(targetId=null){
+ // Modified from https://www.jasongaylord.com/blog/2020/05/21/copy-to-clipboard-using-javascript
+ if (!navigator.clipboard){
+  return;
+ }
+
+ try {
+  if (targetId==null){
+   target = event.srcElement;
+  } else {
+   target = document.getElementById(targetId);
+  }
+  var copy_value = target.getAttribute("data-copy-text");
+  await navigator.clipboard.writeText(copy_value);
+ } catch (error){
+  console.error("copy failed", error);
+ }
+}
+
+</script>
+
+</body>
+</html>
