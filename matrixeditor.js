@@ -5,7 +5,7 @@ function createMatrixEditor(n=10){
  var defaultColours = ["#f94433", "#18181c", "#34fb44", "#f67ec6", "#235ed0", "#970ba0", "#f29836", "#939a97", "#4bb709", "#dfe33b"];
  var defaultValue = '1';
 
- var output = ' <table>\n';
+ var output = ' <table id="matrixtable">\n';
 // var output += '  <caption>|categories| = '+n+'</caption>\n';
 
  // colour-picker row

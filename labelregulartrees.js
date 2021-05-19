@@ -319,6 +319,21 @@ function getMatrix(){
  return genMatrix;
 }
 
+// set the generating matrix from a variable ///////////////////////////////////////////// fn: getMatrix
+function setMatrix(genMatrix){
+ var debug = false;
+ var Ngroups = parseInt(document.getElementById("input_categories").value);
+
+ // we don't test the size, just use whatever partial matrix is given
+ for (m=0;m<Ngroups;m++){
+  for (n=0;n<Ngroups;n++){
+   // put the values into the form:
+   if (genMatrix[m][n]!=undefined) $("#gen_"+m+"_"+n).val(genMatrix[m][n]);
+  }
+ }
+
+}
+
 
 // create the dot code for the current graph ///////////////////////////////////////////// fn: makeDot
 function makeDot(){
@@ -362,6 +377,11 @@ function makeDot(){
 
 // create the initial matrix editing table and display some control values /////////////// fn: setup
 function setup(){
+ // save the current matrix entries if they exist
+ if (document.getElementById("matrixtable")!=null){
+  neomatrix = getMatrix();
+ }
+
  var n = parseInt(document.getElementById("input_categories").value);
  document.getElementById("editorcontent").innerHTML = createMatrixEditor(n);
 
@@ -374,6 +394,13 @@ function setup(){
  });
 
  setColours();
+
+ // put the values back into the matrix, if we saved them, otherwise save them now
+ if (typeof(neomatrix)!="undefined"){
+  setMatrix(neomatrix);
+ } else {
+  neomatrix = getMatrix();
+ }
 
 }
 
