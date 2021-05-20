@@ -337,24 +337,29 @@ function setMatrix(genMatrix){
 
 // create the dot code for the current graph ///////////////////////////////////////////// fn: makeDot
 function makeDot(){
- var dot = "graph {\n";
+ var Ngroups = parseInt(document.getElementById("input_categories").value);
  var lastsource = "";
  var lasttarget = "";
- var Ngroups = parseInt(document.getElementById("input_categories").value);
+
+ var dot = "graph {\n";
+ dot += "\tedge [penwidth=1, color=black]\n";
+ dot += "\tnode [label=\"\", style=filled, fixedsize=true, shape=circle]\n";
+ dot += "\tranksep=2\n";
 
  // loop through the group, set each one's colour and then list its nodes:
- var keepCount = 0;
  for (g=0;g<Ngroups;g++){
-  dot += "\n {color:"+document.getElementById("picker"+g).value+"}\n  ";
+  dot += "\n\tnode [fillcolor=\""+document.getElementById("picker"+g).value+"\"]\n\t\t";
+  var keepCount = 0;
   nodes.forEach(function(d) {
    if (d.group == g) {
     dot += " "+d.myindex+";"
     keepCount++;
-    if (keepCount%20 == 0){ // wrap long lines after 20 nodes
-     dot += "\n  ";
+    if (keepCount%16==0){ // wrap long lines after 16 nodes
+     dot += "\n\t\t";
     }
    }
   });
+  dot += "\n";
  }
  dot += "\n\n";
 
@@ -363,7 +368,7 @@ function makeDot(){
   if (d.source.myindex == lasttarget && d.target.myindex == lastsource){
    // do nothing (do not print both links for an undirected edge)
   } else {
-   dot += " "+d.source.myindex+" -- "+d.target.myindex+"\n";
+   dot += "\t"+d.source.myindex+" -- "+d.target.myindex+"\n";
   }
   lastsource = d.source.myindex;
   lasttarget = d.target.myindex;
