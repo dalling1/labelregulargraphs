@@ -571,3 +571,53 @@ async function copy(targetId=null){
  }
 }
 
+// save the DVG graph as a PDF /////////////////////////////////////////////////////////// fn: savePDF
+function savePDF(){
+ const { jsPDF } = window.jspdf;
+
+ // make sure the midpoint markers are hidden
+// $(".midptlabel").css("display","none");
+
+ var saveBounds = bounds();
+ var pdfwidth = Math.ceil(saveBounds.maxX-saveBounds.minX);
+ var pdfheight = Math.ceil(saveBounds.maxY-saveBounds.minY);
+ var xoff = -saveBounds.minX;
+ var yoff = -saveBounds.minY;
+ var layout = "portrait";
+
+ if (pdfwidth>pdfheight) layout="landscape";
+ var thepdf = new jsPDF(layout, "pt", [pdfheight, pdfwidth]);
+
+ // This produces a PDF which is approx. 33% larger than on screen;
+ // changing "scale" to 75% broke the offsets and/or width-height.
+ svg2pdf(document.getElementById("thesvg"), thepdf, {
+       xOffset: xoff,
+       yOffset: yoff,
+       scale: 1,
+ });
+ thepdf.save("graph.pdf");
+ return 0;
+}
+
+// save the current SVG graph as a PNG /////////////////////////////////////////////////// fn: savePNG
+function savePNG(){
+ // for options see https://github.com/exupero/saveSvgAsPng
+
+ // make sure the midpoint markers are hidden
+// $(".midptlabel").css("display","none");
+
+// var transparentBG = $("#transparencybutton").prop('checked');
+ var transparentBG = true;
+ var saveBounds = bounds();
+ var saveOptions = {
+  scale: 2.0, // larger, better quality
+  backgroundColor: (transparentBG?"#fff0":"#fff"), // transparent or not
+  left: saveBounds.minX,
+  top: saveBounds.minY,
+  width: saveBounds.maxX-saveBounds.minX,
+  height: saveBounds.maxY-saveBounds.minY,
+ };
+
+ saveSvgAsPng(document.getElementById("thesvg"), "graph.png", saveOptions);
+}
+

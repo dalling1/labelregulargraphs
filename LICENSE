@@ -19,3 +19,13 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+-----------------------------------------------------------------------------
+
+svg2pdf.js is also MIT-licensed
+
+ * svg2pdf.js:
+ *   license: MIT (http://opensource.org/licenses/MIT)
+ *   author: yFiles for HTML Support Team <yfileshtml@yworks.com>
+ *   homepage: https://github.com/yWorks/svg2pdf.js#readme
+ *   version: 1.5.0
