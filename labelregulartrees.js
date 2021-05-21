@@ -50,10 +50,6 @@ function initialiseD3(){
      .on("DOMMouseScroll", mousewheel)
      .on("mousedown", d3click);
 
- svg.append("rect")
-     .attr("width", svgwidth)
-     .attr("height", svgheight);
-
   // global variables:
  nodes = force.nodes();
  links = force.links();
