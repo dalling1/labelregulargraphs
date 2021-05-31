@@ -432,8 +432,8 @@ function d3colour(n){
  var colour = "#0000ff";
  switch (n){
   case 0: colour = "#f94433"; break;
-  case 1: colour = "#2211fc"; break;
-  case 2: colour = "#34fb44"; break;
+  case 1: colour = "#0f0ff4"; break; // was #2211fc
+  case 2: colour = "#fbeb34"; break; // was #34fb44
   default:
    colour = d3colourscale(n);
  }

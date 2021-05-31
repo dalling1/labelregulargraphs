@@ -2,7 +2,7 @@
 function createMatrixEditor(n=10){
  // n is the number of categories (ie. rows and columns)
 
- var defaultColours = ["#f94433", "#18181c", "#34fb44", "#f67ec6", "#235ed0", "#970ba0", "#f29836", "#939a97", "#4bb709", "#dfe33b"];
+ var defaultColours = ["#f94433", "#0f0ff4", "#fbeb34", "#f67ec6", "#235ed0", "#970ba0", "#f29836", "#939a97", "#4bb709", "#3f533b"];
  var defaultValue = '1';
 
  var output = ' <table id="matrixtable">\n';
