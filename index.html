@@ -249,8 +249,18 @@
   </div>
 
   <button class="bigbutton" onClick="addAllLeaves();" style="margin-left:10px; margin-right:20px;">Add all leaves</button>
-  <button class="bigbutton" onClick="savePDF();">Save PDF</button>
-  <button class="bigbutton" onClick="savePNG();">Save PNG</button>
+
+  <div class="controlgroup" style="margin-left:100px;">
+   <button class="bigbutton" style="width:90px;" onClick="savePDF();">Save PDF</button><br/>
+   <button class="bigbutton" style="width:90px;" onClick="savePNG();">Save PNG</button><br/>
+   <div class="onecontrol">
+    Transparent
+    <label class="switch">
+     <input type="checkbox" id="input_transparent" checked />
+     <span class="slider round"></span>
+    </label>
+   </div>
+  </div>
 
  </div> <!-- end of graphControls div -->
 

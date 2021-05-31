@@ -602,8 +602,12 @@ function savePNG(){
  // make sure the midpoint markers are hidden
 // $(".midptlabel").css("display","none");
 
-// var transparentBG = $("#transparencybutton").prop('checked');
- var transparentBG = true;
+ // get the transparency option if there is a control for it:
+ if (document.getElementById("input_transparent")!=null){
+  var transparentBG = $("#input_transparent").prop('checked');
+ } else { // default to true if there is no control
+  var transparentBG = true;
+ }
  var saveBounds = bounds();
  var saveOptions = {
   scale: 2.0, // larger, better quality
